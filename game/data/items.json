@@ -1,0 +1,132 @@
+{
+  "cristais": {
+    "Rubi": {
+      "stat": "ataque",
+      "cor": [238, 86, 96],
+      "base": 2.4,
+      "nome": "Rubi de Força",
+      "descricao": "Aumenta o ataque físico."
+    },
+    "Safira": {
+      "stat": "mp_max",
+      "cor": [86, 148, 244],
+      "base": 9.0,
+      "nome": "Safira de Mana",
+      "descricao": "Aumenta a mana máxima."
+    },
+    "Esmeralda": {
+      "stat": "hp_max",
+      "cor": [82, 204, 138],
+      "base": 14.0,
+      "nome": "Esmeralda de Vida",
+      "descricao": "Aumenta a vida máxima."
+    },
+    "Topázio": {
+      "stat": "critico",
+      "cor": [244, 206, 92],
+      "base": 1.6,
+      "nome": "Topázio de Precisão",
+      "descricao": "Aumenta a chance de crítico."
+    },
+    "Ametista": {
+      "stat": "regen_mp",
+      "cor": [176, 118, 236],
+      "base": 0.55,
+      "nome": "Ametista de Foco",
+      "descricao": "Acelera a regeneração de mana."
+    },
+    "Ônix": {
+      "stat": "defesa",
+      "cor": [112, 116, 136],
+      "base": 1.8,
+      "nome": "Ônix de Guarda",
+      "descricao": "Aumenta a defesa."
+    },
+    "Diamante": {
+      "stat": "stamina_max",
+      "cor": [200, 240, 250],
+      "base": 8.0,
+      "nome": "Diamante de Fôlego",
+      "descricao": "Aumenta a stamina máxima."
+    },
+    "Turmalina": {
+      "stat": "velocidade",
+      "cor": [240, 150, 90],
+      "base": 2.0,
+      "nome": "Turmalina de Ímpeto",
+      "descricao": "Aumenta a velocidade de movimento."
+    },
+    "Granada": {
+      "stat": "regen_hp",
+      "cor": [200, 70, 90],
+      "base": 0.45,
+      "nome": "Granada de Vigor",
+      "descricao": "Acelera a regeneração de vida."
+    },
+    "Opala": {
+      "stat": "mp_max",
+      "cor": [230, 230, 250],
+      "base": 12.0,
+      "nome": "Opala de Clareza",
+      "descricao": "Aumenta a mana máxima."
+    },
+    "Nucleo": {
+      "stat": "ataque",
+      "cor": [198, 238, 255],
+      "base": 3.8,
+      "nome": "Núcleo de Aether",
+      "descricao": "Aumenta o ataque com energia primordial."
+    },
+    "Eclipse": {
+      "stat": "ataque",
+      "cor": [176, 110, 236],
+      "base": 3.6,
+      "nome": "Cristal do Eclipse",
+      "descricao": "Aumenta o ataque com a energia do eclipse."
+    },
+    "Vazio": {
+      "stat": "defesa",
+      "cor": [96, 110, 150],
+      "base": 2.2,
+      "nome": "Cristal do Vazio",
+      "descricao": "Aumenta a defesa com a escuridão do vazio."
+    }
+  },
+  "pocoes": {
+    "vida": {
+      "nome": "Poção de Vida",
+      "cor": [232, 82, 96],
+      "icone": "pocao_vida",
+      "descricao": "Restaura 35% da vida máxima."
+    },
+    "mana": {
+      "nome": "Poção de Mana",
+      "cor": [82, 148, 244],
+      "icone": "pocao_mana",
+      "descricao": "Restaura 40% da mana máxima."
+    },
+    "stamina": {
+      "nome": "Elixir de Fôlego",
+      "cor": [244, 206, 92],
+      "icone": "pocao_stamina",
+      "descricao": "Restaura 60 de stamina."
+    }
+  },
+  "bases_arma": {
+    "Espada": ["Lâmina", "Espada", "Sabre", "Montante", "Gládio", "Cimitarra"],
+    "Arco": ["Arco", "Arco Longo", "Arco Élfico", "Arco Curvo"],
+    "Cajado": ["Cajado", "Cetro", "Bastão Arcano", "Cetro Rúnico"]
+  },
+  "prefixos": {
+    "Comum": ["", "Gasta", "Simples"],
+    "Raro": ["Afiado", "Robusto", "Runado", "Élfico", "Brilhante", "Antigo", "Rúnico", "Gravado"],
+    "Épico": ["Ancestral", "Sombrio", "Cristalino", "Esquecido", "Espectral", "Radiante"],
+    "Lendário": ["de Aether", "do Vazio", "Primordial", "do Coração", "do Eclipse", "Eterno"]
+  },
+  "sufixos": {
+    "Arma": ["do Caçador", "do Guardião", "das Chamas", "do Inverno", "do Vendaval", "do Crepúsculo"],
+    "Armadura": ["do Baluarte", "da Floresta", "do Titã", "do Eclipse", "da Aurora", "do Firmamento"],
+    "Anel": ["do Sábio", "da Tempestade", "do Vazio", "da Aurora", "do Eclipse", "do Presságio"],
+    "Amuleto": ["de Lumen", "do Oráculo", "da Ruína", "de Aether", "do Coração", "do Eclipse"]
+  }
+}
