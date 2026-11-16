@@ -148,21 +148,42 @@ function mostrarErro(erro) {
   loading.style.display = "flex";
   startBtn.style.display = "none";
   errBox.style.display = "block";
-  errBox.textContent = String(erro && erro.stack ? erro.stack : erro);
+  var detalhe = String(erro && erro.stack ? erro.stack : erro);
+  // Adiciona informações de diagnóstico
+  detalhe += "\n\n--- Diagnóstico ---";
+  detalhe += "\nNavegador: " + navigator.userAgent;
+  detalhe += "\nConexão: " + (navigator.onLine ? "online" : "offline");
+  detalhe += "\nHora: " + new Date().toISOString();
+  errBox.textContent = detalhe;
   msg.textContent = "Não foi possível iniciar o jogo.";
 }
 
 async function iniciarJogo() {
   startBtn.style.display = "none";
   progress(4, "Carregando o motor Python...");
-  const pyodide = await loadPyodide();
+  // Tenta carregar o lock file local para evitar dependência de CDN externo.
+  let lockFileContents = null;
+  for (let tentativa = 1; tentativa <= 3; tentativa++) {
+    try {
+      const lockResp = await fetch("pyodide-lock.json", { cache: "no-store" });
+      if (lockResp.ok) {
+        lockFileContents = await lockResp.text();
+        progress(8, "Lock file local carregado.");
+        break;
+      }
+    } catch (e) {
+      console.warn("Tentativa " + tentativa + " falhou:", e);
+      if (tentativa < 3) await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+  if (!lockFileContents) {
+    console.warn("Lock file local indisponível, usando padrão do CDN.");
+  }
+  const pyodide = await loadPyodide(lockFileContents ? { lockFileContents, packages: ["pygame-ce"], indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.1/full/" } : { packages: ["pygame-ce"], indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.1/full/" });
   window.pyodide = pyodide;
 
   progress(24, "Preparando o canvas...");
   pyodide.canvas.setCanvas2D(canvas);
-
-  progress(30, "Carregando pygame...");
-  await pyodide.loadPackage("pygame-ce");
 
   progress(52, "Baixando o jogo...");
   const resposta = await fetch("game.zip", { cache: "no-store" });
