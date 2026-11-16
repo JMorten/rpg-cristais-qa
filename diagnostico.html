@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Diagnóstico Cristais de Aether</title>
+<style>
+  body { margin: 0; padding: 20px; background: #0b0e14; color: #f2e6c8; font-family: -apple-system, monospace; }
+  h1 { color: #e8c97a; }
+  #log { white-space: pre-wrap; font-size: 12px; background: #1a1a24; padding: 12px; border-radius: 8px; max-height: 60vh; overflow: auto; }
+  button { padding: 12px 24px; margin: 8px 4px; border: 1px solid #e8c97a; border-radius: 8px; background: #2a2116; color: #f6e6bd; font-size: 16px; cursor: pointer; }
+  .ok { color: #7cff9a; }
+  .err { color: #ff7c7c; }
+  .info { color: #7cc8ff; }
+</style>
+</head>
+<body>
+<h1>Diagnóstico — Cristais de Aether</h1>
+<p>Toque em "Iniciar Diagnóstico" e copie o resultado para compartilhar.</p>
+<button onclick="diagnosticar()">Iniciar Diagnóstico</button>
+<button onclick="copiar()">Copiar Relatório</button>
+<div id="log"></div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.29.1/full/pyodide.js"></script>
+<script>
+const log = (msg, cls) => {
+  const el = document.getElementById("log");
+  const line = document.createElement("div");
+  line.className = cls || "";
+  line.textContent = msg;
+  el.appendChild(line);
+  console.log(msg);
+};
+
+let relatorio = [];
+
+function add(msg, cls) {
+  relatorio.push(msg);
+  log(msg, cls);
+}
+
+async function diagnosticar() {
+  document.getElementById("log").innerHTML = "";
+  relatorio = [];
+  add("=== DIAGNÓSTICO CRISTAIS DE AETHER ===", "info");
+  add("Navegador: " + navigator.userAgent, "info");
+  add("Plataforma: " + navigator.platform, "info");
+  add("Conexão: " + (navigator.onLine ? "online" : "offline"), "info");
+  add("Memória (estimada): " + (navigator.deviceMemory || "desconhecida") + " GB", "info");
+  add("Hora: " + new Date().toISOString(), "info");
+  add("", "info");
+
+  // Etapa 1: Carregar Pyodide
+  add("--- Etapa 1: Carregar Pyodide ---", "info");
+  let pyodide = null;
+  try {
+    const t0 = performance.now();
+    pyodide = await loadPyodide();
+    const t1 = performance.now();
+    add("Pyodide carregado em " + Math.round(t1 - t0) + "ms", "ok");
+    add("Python version: " + pyodide.version, "ok");
+  } catch (e) {
+    add("FALHA ao carregar Pyodide: " + e.name + " - " + e.message, "err");
+    add("Stack: " + (e.stack || "N/A"), "err");
+    return;
+  }
+
+  // Etapa 2: Carregar pygame-ce
+  add("--- Etapa 2: Carregar pygame-ce ---", "info");
+  try {
+    const t0 = performance.now();
+    await pyodide.loadPackage("pygame-ce");
+    const t1 = performance.now();
+    add("pygame-ce carregado em " + Math.round(t1 - t0) + "ms", "ok");
+    const version = pyodide.runPython("import pygame; pygame.__version__");
+    add("pygame version: " + version, "ok");
+  } catch (e) {
+    add("FALHA ao carregar pygame-ce: " + e.name + " - " + e.message, "err");
+    add("Stack: " + (e.stack || "N/A"), "err");
+    return;
+  }
+
+  // Etapa 3: Inicializar pygame
+  add("--- Etapa 3: Inicializar pygame ---", "info");
+  try {
+    pyodide.runPython(`
+import pygame
+pygame.init()
+print("pygame.init() OK")
+    `);
+    add("pygame.init() OK", "ok");
+  } catch (e) {
+    add("FALHA em pygame.init(): " + e.name + " - " + e.message, "err");
+    return;
+  }
+
+  // Etapa 4: Criar display
+  add("--- Etapa 4: Criar display ---", "info");
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1280;
+    canvas.height = 720;
+    document.body.appendChild(canvas);
+    pyodide.canvas.setCanvas2D(canvas);
+    pyodide.runPython(`
+import pygame
+pygame.display.set_mode((1280, 720))
+print("set_mode OK")
+    `);
+    add("pygame.display.set_mode() OK", "ok");
+  } catch (e) {
+    add("FALHA em set_mode(): " + e.name + " - " + e.message, "err");
+    return;
+  }
+
+  // Etapa 5: Descompactar game.zip (se disponível)
+  add("--- Etapa 5: Descompactar game.zip ---", "info");
+  let gameDisponivel = false;
+  try {
+    const resp = await fetch("game.zip", { cache: "no-store" });
+    if (resp.ok) {
+      const buf = await resp.arrayBuffer();
+      await pyodide.unpackArchive(buf, "zip", { extractDir: "/game" });
+      add("game.zip descompactado OK", "ok");
+      gameDisponivel = true;
+    } else {
+      add("game.zip não encontrado (HTTP " + resp.status + ")", "err");
+    }
+  } catch (e) {
+    add("FALHA ao descompactar game.zip: " + e.message, "err");
+  }
+
+  if (gameDisponivel) {
+    add("--- Etapa 5b: Configurar path ---", "info");
+    try {
+      pyodide.runPython(`
+import os, sys
+os.chdir("/game")
+sys.path.insert(0, "/game")
+print("Path configurado: " + os.getcwd())
+      `);
+      add("Path configurado: /game", "ok");
+    } catch (e) {
+      add("FALHA ao configurar path: " + e.message, "err");
+      gameDisponivel = false;
+    }
+  }
+
+  if (gameDisponivel) {
+    add("--- Etapa 5b: Importar modulos ---", "info");
+    const modulos = ["settings", "utils", "enemies", "enemy_art", "pixel_enemy", "touch", "game"];
+    for (const mod of modulos) {
+      try {
+        pyodide.runPython(`import ${mod}; print("${mod} OK")`);
+        add(mod + ": OK", "ok");
+      } catch (e) {
+        add(mod + ": FALHA - " + e.message, "err");
+      }
+    }
+  } else {
+    add("--- Etapa 5b: Pulada (sem /game) ---", "info");
+  }
+
+  // Etapa 6: Criar Jogo
+  if (gameDisponivel) {
+    // Etapa 6: Importar main
+    add("--- Etapa 6: Importar main ---", "info");
+    try {
+      pyodide.runPython(`
+import os, sys
+os.environ["CRISTAIS_WEB"] = "1"
+os.environ["CRISTAIS_TOQUE"] = "1"
+os.environ["CRISTAIS_SEM_AUDIO"] = "1"
+import main
+print("main importado OK")
+      `);
+      add("main importado OK", "ok");
+    } catch (e) {
+      add("FALHA ao importar main: " + e.name + " - " + e.message, "err");
+      add("Detalhe: " + (e.stack || "N/A").substring(0, 800), "err");
+      return;
+    }
+
+    // Etapa 7: Criar Jogo
+    add("--- Etapa 7: Criar Jogo ---", "info");
+    try {
+      pyodide.runPython(`
+import main
+from game import Jogo
+jogo = Jogo()
+jogo.aplicar_preferencias()
+print("Jogo criado OK")
+      `);
+      add("Jogo criado OK", "ok");
+    } catch (e) {
+      add("FALHA ao criar Jogo: " + e.name + " - " + e.message, "err");
+      add("Detalhe: " + (e.stack || "N/A").substring(0, 800), "err");
+      return;
+    }
+  } else {
+    add("--- Etapa 6-7: Puladas (sem /game) ---", "info");
+    add("Para testar com o jogo completo, use a pagina index.html", "info");
+  }
+
+  add("", "info");
+  add("=== DIAGNÓSTICO CONCLUÍDO ===", "ok");
+  add("Se todas as etapas passaram, o problema pode estar no game.zip ou nos assets.", "info");
+}
+
+function copiar() {
+  const texto = relatorio.join("\n");
+  navigator.clipboard.writeText(texto).then(() => {
+    alert("Relatório copiado!");
+  }).catch(() => {
+    // Fallback para Safari
+    const ta = document.createElement("textarea");
+    ta.value = texto;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    alert("Relatório copiado!");
+  });
+}
+</script>
+</body>
+</html>
