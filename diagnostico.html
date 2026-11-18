@@ -203,6 +203,39 @@ print("Jogo criado OK")
     add("Para testar com o jogo completo, use a pagina index.html", "info");
   }
 
+  // Etapa 8: Testar loop de jogo (5 frames) - apenas se game disponivel
+  if (gameDisponivel) {
+    add("--- Etapa 8: Loop de jogo (5 frames) ---", "info");
+    try {
+      pyodide.runPython(`
+import pygame, os, sys
+os.environ["CRISTAIS_WEB"] = "1"
+os.environ["CRISTAIS_TOQUE"] = "1"
+os.environ["CRISTAIS_SEM_AUDIO"] = "1"
+import main
+from game import Jogo
+jogo = Jogo()
+jogo.aplicar_preferencias()
+jogo.novo_jogo("Cavaleiro")
+tela = pygame.display.get_surface()
+relogio = pygame.time.Clock()
+for i in range(5):
+    dt = relogio.tick(30) / 1000.0
+    for event in pygame.event.get():
+        jogo.processar_evento(event)
+    jogo.atualizar(dt)
+    jogo.desenhar(tela)
+    pygame.display.flip()
+print("5 frames OK")
+      `);
+      add("5 frames de jogo OK", "ok");
+    } catch (e) {
+      add("FALHA no loop de jogo: " + e.name + " - " + e.message, "err");
+      add("Detalhe: " + (e.stack || "N/A").substring(0, 1000), "err");
+      return;
+    }
+  }
+
   add("", "info");
   add("=== DIAGNÓSTICO CONCLUÍDO ===", "ok");
   add("Se todas as etapas passaram, o problema pode estar no game.zip ou nos assets.", "info");
