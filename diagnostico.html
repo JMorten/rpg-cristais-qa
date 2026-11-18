@@ -236,6 +236,38 @@ print("5 frames OK")
     }
   }
 
+  // Etapa 9: Testar main.main() completo (como o jogo real faz)
+  if (gameDisponivel) {
+    add("--- Etapa 9: main.main() completo ---", "info");
+    try {
+      pyodide.runPythonAsync(`
+import os, sys
+os.environ["CRISTAIS_WEB"] = "1"
+os.environ["CRISTAIS_TOQUE"] = "1"
+os.environ["CRISTAIS_SEM_AUDIO"] = "1"
+os.chdir("/game")
+sys.path.insert(0, "/game")
+import main
+import asyncio
+# Chama main.main() mas interrompe após 3 segundos
+async def testar():
+    try:
+        await asyncio.wait_for(main.main(), timeout=3.0)
+    except asyncio.TimeoutError:
+        print("main.main() rodou 3s sem erro (OK)")
+    except Exception as e:
+        print("ERRO em main.main(): " + str(e))
+        raise
+await testar()
+      `);
+      add("main.main() rodou sem erro (3s)", "ok");
+    } catch (e) {
+      add("FALHA em main.main(): " + e.name + " - " + e.message, "err");
+      add("Detalhe: " + (e.stack || "N/A").substring(0, 1000), "err");
+      return;
+    }
+  }
+
   add("", "info");
   add("=== DIAGNÓSTICO CONCLUÍDO ===", "ok");
   add("Se todas as etapas passaram, o problema pode estar no game.zip ou nos assets.", "info");
